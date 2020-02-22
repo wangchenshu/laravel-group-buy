@@ -19,9 +19,9 @@ use Illuminate\Http\Request;
 Route::namespace('Api')->prefix('v1')->middleware('cors')->group(function () {
 
     // 用戶註冊
-    Route::post('/users', 'UserController@store')->name('users.store');
+    // Route::post('/users', 'UserController@store')->name('users.store');
     // 用戶登入
-    Route::post('/login', 'UserController@login')->name('users.login');
+    // Route::post('/login', 'UserController@login')->name('users.login');
 
     Route::middleware('api.refresh')->group(function () {
 

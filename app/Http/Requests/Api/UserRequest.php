@@ -26,7 +26,7 @@ class UserRequest extends FormRequest
         switch ($this->method()) {
             case 'GET': {
                     return [
-                        'id' => ['required,id']
+                        'id' => ['required, id']
                     ];
                 }
             case 'POST': {
