@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use App\Api\Helpers\ExceptionReport;
 
 class Handler extends ExceptionHandler
 {
@@ -50,6 +51,15 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        return parent::render($request, $exception);
+        // return parent::render($request, $exception);
+        $reporter = ExceptionReport::make($exception);
+        if ($reporter->shouldReturn()) {
+            return $reporter->report();
+        }
+        if (env('APP_DEBUG')) {
+            return parent::render($request, $exception);
+        } else {
+            return $reporter->prodReport();
+        }
     }
 }

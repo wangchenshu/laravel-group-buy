@@ -19,6 +19,19 @@ class LineMessageController extends Controller
 {
     protected $bot;
 
+    private function getUserDisplayName($userId)
+    {
+        $res = $this->bot->getProfile($userId);
+        $displayName = "";
+
+        if ($res->isSucceeded()) {
+            $profile = $res->getJSONDecodedBody();
+            $displayName = $profile['displayName'];
+        }
+
+        return $displayName;
+    }
+
     public function index(Request $request)
     {
         $this->bot = resolve('linebot');
@@ -30,8 +43,20 @@ class LineMessageController extends Controller
         foreach ($events as $event) {
             if ($event instanceof MessageEvent) {
                 if ($event instanceof TextMessage) {
+                    $userId = $event->getUserId();
+                    $displayName = $this->getUserDisplayName($userId);
                     $text = $event->getText();
                     $resp_text = $text;
+
+                    if (
+                        $text == "您好" ||
+                        $text == "你好" ||
+                        $text == "妳好" ||
+                        strtolower($text) == "hello" ||
+                        strtolower($text) == "hi"
+                    ) {
+                        $resp_text .= ", " . $displayName . " 您好";
+                    }
 
                     $multiple_message_builder = new MultiMessageBuilder();
                     $multiple_message_builder
