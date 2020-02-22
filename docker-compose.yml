@@ -11,7 +11,7 @@ services:
       command: "sh ./startup.sh"
       ports:
         - 7005:7005
-      # network_mode: host
+      network_mode: host
       # networks:
       #   - local-net
 
