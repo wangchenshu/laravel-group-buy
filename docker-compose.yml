@@ -1,0 +1,21 @@
+version: '3.0'
+
+services:
+    laravel-group-buy:
+      build: .
+      container_name: laravel-group-buy
+      restart: always
+      volumes:
+        - "./:/app"
+      working_dir: /app
+      command: "sh ./startup.sh"
+      ports:
+        - 7005:7005
+      # network_mode: host
+      # networks:
+      #   - local-net
+
+# networks:
+#   local-net:
+#     external:
+#       name: local-net
