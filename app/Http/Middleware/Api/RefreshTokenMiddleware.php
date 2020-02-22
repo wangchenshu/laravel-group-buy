@@ -29,7 +29,7 @@ class RefreshTokenMiddleware extends BaseMiddleware
             if ($this->auth->parseToken()->authenticate()) {
                 return $next($request);
             }
-            throw new UnauthorizedHttpException('jwt-auth', '未登录');
+            throw new UnauthorizedHttpException('jwt-auth', '未登入');
         } catch (TokenExpiredException $exception) {
             try {
                 $token = $this->auth->refresh();
