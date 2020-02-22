@@ -103,9 +103,17 @@ class LineMessageController extends Controller
 
             array_push(
                 $data,
-                new CarouselColumnTemplateBuilder($productName, $productPrice, $productUrl, [
-                    new PostbackTemplateActionBuilder('加入購物車', 'action=add&itemid=' . $productId . '&itemname=' . $productName),
-                ])
+                new CarouselColumnTemplateBuilder(
+                    $productName,
+                    $productPrice,
+                    $productUrl,
+                    [
+                        new PostbackTemplateActionBuilder(
+                            '加入購物車',
+                            'action=add&itemid=' . $productId . '&itemname=' . $productName
+                        ),
+                    ]
+                )
             );
         }
 
