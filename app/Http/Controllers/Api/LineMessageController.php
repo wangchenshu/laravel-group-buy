@@ -15,8 +15,6 @@ use LINE\LINEBot\MessageBuilder\TemplateBuilder\ButtonTemplateBuilder;
 use LINE\LINEBot\MessageBuilder\MultiMessageBuilder;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
-use App\Jobs\RecordLineMessageLog;
-
 class LineMessageController extends Controller
 {
     protected $bot;
@@ -33,7 +31,6 @@ class LineMessageController extends Controller
             if ($event instanceof MessageEvent) {
                 if ($event instanceof TextMessage) {
                     $text = $event->getText();
-                    $default_text = '請輸入: 我要團購';
                     $resp_text = $text;
 
                     $multiple_message_builder = new MultiMessageBuilder();
@@ -51,7 +48,6 @@ class LineMessageController extends Controller
                     //     $profile = $res->getJSONDecodedBody();
                     //     $displayName = $profile['displayName'];
                     // }
-                    // $this->dispatch(new RecordLineMessageLog($userId, $displayName, $text))->delay(5);
 
                 } elseif ($event instanceof StickerMessage) {
                     $this->bot->replyMessage(
