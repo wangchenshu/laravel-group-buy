@@ -271,7 +271,7 @@ class LineMessageController extends Controller
                             $resStr .= PHP_EOL . OrderEnum::getShowName('TRANSFER_BANK_NUM') . ': ' . $testBankNum . PHP_EOL;
                             $resStr .= OrderEnum::getShowName('TRANSFER_ACCOUNT') . ': ' . $testAccount . PHP_EOL;
                             $resStr .= OrderEnum::getShowName('TRANSFER_AMOUNT') . ': $ ' . $totalPrice . PHP_EOL;
-                            $resStr .= PHP_EOL . OrderEnum::getShowName('CHECKOUT_SUCCESS');
+                            // $resStr .= PHP_EOL . OrderEnum::getShowName('CHECKOUT_SUCCESS');
                         } else {
                             $resStr = OrderEnum::getShowName('CHECKOUT_FAIL');
                         }

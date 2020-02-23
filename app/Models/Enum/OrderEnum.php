@@ -34,7 +34,7 @@ class OrderEnum
             case self::MONEY_TRANSFER:
                 return '請於2日內，匯款至以下指定帳戶，我們收到後會儘快為您出貨，謝謝您的配合。';
             case self::TRANSFER_ACCOUNT:
-                return '帳戶';
+                return '匯款帳戶';
             case self::TRANSFER_BANK_NUM:
                 return '銀行代號';
             case self::TRANSFER_AMOUNT:
