@@ -175,7 +175,7 @@ class LineMessageController extends Controller
 
             foreach ($carts as $cart) {
                 $resStr .= $cart->product_name . ', ';
-                $resStr .= OrderEnum::getShowName('PRICE') . ': ' . $cart->price . ', ';
+                $resStr .= OrderEnum::getShowName('PRICE') . ': $ ' . $cart->price . ', ';
                 $resStr .= OrderEnum::getShowName('QTY') . ': ' . $cart->qty . PHP_EOL;
             }
             $resStr .= PHP_EOL . OrderEnum::getShowName('TOTAL_PRICE') . ': $ ' . $totalPrice . PHP_EOL;
@@ -241,10 +241,10 @@ class LineMessageController extends Controller
                         ->add(new TextMessageBuilder($itemName . $resStr))
                         ->add($this->getQuickReply());
                 } elseif ($action == CartEnum::getActionName('CLEAR_CART')) {
-                    $resStr = CartEnum::getShowName('CLEAR_CART_SUCCESS');
+                    $resStr = CartEnum::getShowName('CLEAR_CART_FAIL');
 
-                    if (!$this->clearCartByLineUserId($userId)) {
-                        $resStr = CartEnum::getShowName('CLEAR_CART_FAIL');
+                    if ($this->clearCartByLineUserId($userId)) {
+                        $resStr = CartEnum::getShowName('CLEAR_CART_SUCCESS');
                     }
                     $multiple_message_builder
                         ->add(new TextMessageBuilder($resStr))
