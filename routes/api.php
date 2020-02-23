@@ -49,6 +49,18 @@ Route::namespace('Api')->prefix('v1')->middleware('cors')->group(function () {
         Route::post('/products', 'ProductController@store')->name('product.store');
     });
 
+    // chatfuel only support get and post
+    // 加入會員
+    Route::post('/chatfuel/fb-user/join', 'FbUserController@join');
+    // 加入購物車
+    Route::post('/chatfuel/cart-add', 'ChatfuelController@addToCart');
+    // 查看購物車
+    Route::post('/chatfuel/cart-check', 'ChatfuelController@checkCart');
+    // 清除購物車
+    Route::post('/chatfuel/cart-clear', 'ChatfuelController@clearCart');
+    // 結帳
+    Route::post('/chatfuel/checkout', 'ChatfuelController@checkout');
+
     // Line Bot
     Route::post('/linebot/callback', 'LineMessageController@index');
 });
