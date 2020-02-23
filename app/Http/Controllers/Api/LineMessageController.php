@@ -24,6 +24,10 @@ use LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselColumnTemplateBuilder;
 use LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselTemplateBuilder;
 
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\Enum\CartEnum;
+use App\Models\Enum\OrderEnum;
+use App\Models\Enum\ProductEnum;
 
 class LineMessageController extends Controller
 {
@@ -45,26 +49,26 @@ class LineMessageController extends Controller
     private function getQuickReply()
     {
         $data = [];
-        $messageTitle = '選單';
+        $messageTitle = ProductEnum::getShowName('MENU');
         $menus = array(
             array(
-                'name' => '查看購物車',
-                'postBack' => 'action=checkCart',
+                'name' => CartEnum::getShowName('CHECK_CART'),
+                'postBack' => 'action=' . CartEnum::getActionName('CHECK_CART'),
                 'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b"
             ),
             array(
-                'name' => '結帳',
-                'postBack' => 'action=checkout',
+                'name' => CartEnum::getShowName('CHECKOUT'),
+                'postBack' => 'action=' . CartEnum::getActionName('CHECKOUT'),
                 'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b",
             ),
             array(
-                'name' => '團購商品',
-                'postBack' => 'action=groupBuy',
+                'name' => OrderEnum::getShowName('GROUP_BUY_PRODUCT'),
+                'postBack' => 'action=' . OrderEnum::getActionName('GROUP_BUY_PRODUCT'),
                 'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E6%B5%B7%E8%8B%94%E7%A6%AE%E7%9B%92.jpg?alt=media&token=4e1e859f-fae6-41de-86f4-94a506c3a2a9",
             ),
             array(
-                'name' => '清除購物車',
-                'postBack' => 'action=clear',
+                'name' => CartEnum::getShowName('CLEAR_CART'),
+                'postBack' => 'action=' . CartEnum::getActionName('CLEAR_CART'),
                 'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b",
             ),
         );
@@ -92,25 +96,29 @@ class LineMessageController extends Controller
     private function getCarousel()
     {
         $data = [];
-        $messageTitle = '選單';
+        $messageTitle = ProductEnum::getShowName('MENU');
         $products = Product::all();
 
         foreach ($products as $product) {
             $productId = $product->id;
             $productName = $product->name;
-            $productPrice = '$ ' . $product->price;
+            $productPrice = $product->price;
             $productUrl = $product->pic_url;
 
             array_push(
                 $data,
                 new CarouselColumnTemplateBuilder(
                     $productName,
-                    $productPrice,
+                    '$ ' . $productPrice,
                     $productUrl,
                     [
                         new PostbackTemplateActionBuilder(
-                            '加入購物車',
-                            'action=add&itemid=' . $productId . '&itemname=' . $productName
+                            CartEnum::getShowName('ADD_TO_CART'),
+                            'action='
+                                . CartEnum::getActionName('ADD_TO_CART')
+                                . '&itemId=' . $productId
+                                . '&itemName=' . $productName
+                                . '&itemPrice=' . $productPrice
                         ),
                     ]
                 )
@@ -131,6 +139,32 @@ class LineMessageController extends Controller
         );
     }
 
+    private function addToCart($productName, $lineUserId, $username, $qty, $price)
+    {
+        $cart = Cart::create([
+            'product_name' => $productName,
+            'line_user_id' => $lineUserId,
+            'username' => $username,
+            'qty' => $qty,
+            'price' => $price,
+        ]);
+        return $cart;
+    }
+
+
+    private function getCartByLineUserId($lineUserId)
+    {
+        $carts = Cart::where('line_user_id', $lineUserId)->get();
+        return $carts;
+    }
+
+
+    private function clearCartByLineUserId($lineUserId)
+    {
+        Cart::where('line_user_id', $lineUserId)->delete();
+        return true;
+    }
+
     public function index(Request $request)
     {
         $this->bot = resolve('linebot');
@@ -147,7 +181,7 @@ class LineMessageController extends Controller
                     $multiple_message_builder = new MultiMessageBuilder();
 
                     switch ($text) {
-                        case '團購商品':
+                        case OrderEnum::getShowName('GROUP_BUY_PRODUCT'):
                             $messageTemplate = $this->getCarousel();
                             break;
                         default:
@@ -169,30 +203,54 @@ class LineMessageController extends Controller
                 parse_str($event->getPostbackData(), $data);
                 $action = $data['action'];
                 $multiple_message_builder = new MultiMessageBuilder();
+                $userId = $event->getUserId();
+                $displayName = $this->getUserDisplayName($userId);
 
-                // 團購商品
-                if ($action == 'groupBuy') {
-                    $this->replyMessage($event, $this->getCarousel());
-                }
+                if ($action == OrderEnum::getActionName('GROUP_BUY_PRODUCT')) {
+                    $multiple_message_builder
+                        ->add($this->getCarousel())
+                        ->add($this->getQuickReply());
+                } elseif ($action == CartEnum::getActionName('ADD_TO_CART')) {
+                    $itemName = $data['itemName'];
+                    $itemPrice = $data['itemPrice'];
+                    $cart = $this->addToCart($itemName, $userId, $displayName, 1, $itemPrice);
+                    $resStr = CartEnum::getShowName('ADD_CART_SUCCESS');
 
-                // 購物車操作
-                if ($action == 'add') {
-                    $itemid = $data['itemid'];
-                    $itemname = $data['itemname'];
+                    if (!$cart->product_name == $itemName) {
+                        $resStr = CartEnum::getShowName('ADD_CART_FAIL');
+                    }
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder($itemname . ' 加入購物車成功'))
+                        ->add(new TextMessageBuilder($itemName . $resStr))
                         ->add($this->getQuickReply());
-                } elseif ($action == 'clear') {
+                } elseif ($action == CartEnum::getActionName('CLEAR_CART')) {
+                    $resStr = CartEnum::getShowName('CLEAR_CART_SUCCESS');
+
+                    if (!$this->clearCartByLineUserId($userId)) {
+                        $resStr = CartEnum::getShowName('CLEAR_CART_FAIL');
+                    }
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder('清除購物車成功'))
+                        ->add(new TextMessageBuilder($resStr))
                         ->add($this->getQuickReply());
-                } elseif ($action == 'checkCart') {
+                } elseif ($action == CartEnum::getActionName('CHECK_CART')) {
+                    $carts = $this->getCartByLineUserId($userId);
+                    $resStr = CartEnum::getShowName('EMPTY_CART');
+                    $totalPrice = $carts->sum->price;
+
+                    if (count($carts) > 0) {
+                        $resStr = CartEnum::getShowName('CURRENT_CART') . ': ' . PHP_EOL . PHP_EOL;
+                        foreach ($carts as $cart) {
+                            $resStr .= $cart->product_name . ', ';
+                            $resStr .= OrderEnum::getShowName('PRICE') . ': ' . $cart->price . ', ';
+                            $resStr .= OrderEnum::getShowName('QTY') . ': ' . $cart->qty . PHP_EOL;
+                        }
+                        $resStr .= PHP_EOL . OrderEnum::getShowName('TOTAL_PRICE') . ': $' . $totalPrice;
+                    }
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder('購物車無商品'))
+                        ->add(new TextMessageBuilder($resStr))
                         ->add($this->getQuickReply());
-                } elseif ($action == 'checkout') {
+                } elseif ($action == CartEnum::getActionName('CHECKOUT')) {
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder('結帳完成'))
+                        ->add(new TextMessageBuilder(OrderEnum::getShowName('CHECKOUT_SUCCESS')))
                         ->add($this->getQuickReply());
                 } else {
                     $multiple_message_builder->add($this->getQuickReply());
