@@ -26,7 +26,7 @@ class CartEnum
             case self::CHECKOUT:
                 return '結帳';
             case self::EMPTY_CART:
-                return '購物車無商品';
+                return '購物車內無商品';
             case self::ADD_TO_CART:
                 return ' 加入購物車';
             case self::ADD_CART_SUCCESS:

@@ -165,6 +165,24 @@ class LineMessageController extends Controller
         return true;
     }
 
+    private function showCurrentCartByLineUserId($userId)
+    {
+        $carts = $this->getCartByLineUserId($userId);
+        $resStr = CartEnum::getShowName('EMPTY_CART');
+        if (count($carts) > 0) {
+            $resStr = CartEnum::getShowName('CURRENT_CART') . ': ' . PHP_EOL . PHP_EOL;
+            $totalPrice = $carts->sum->price;
+
+            foreach ($carts as $cart) {
+                $resStr .= $cart->product_name . ', ';
+                $resStr .= OrderEnum::getShowName('PRICE') . ': ' . $cart->price . ', ';
+                $resStr .= OrderEnum::getShowName('QTY') . ': ' . $cart->qty . PHP_EOL;
+            }
+            $resStr .= PHP_EOL . OrderEnum::getShowName('TOTAL_PRICE') . ': $ ' . $totalPrice . PHP_EOL;
+        }
+
+        return $resStr;
+    }
     public function index(Request $request)
     {
         $this->bot = resolve('linebot');
@@ -232,25 +250,32 @@ class LineMessageController extends Controller
                         ->add(new TextMessageBuilder($resStr))
                         ->add($this->getQuickReply());
                 } elseif ($action == CartEnum::getActionName('CHECK_CART')) {
-                    $carts = $this->getCartByLineUserId($userId);
-                    $resStr = CartEnum::getShowName('EMPTY_CART');
-                    $totalPrice = $carts->sum->price;
-
-                    if (count($carts) > 0) {
-                        $resStr = CartEnum::getShowName('CURRENT_CART') . ': ' . PHP_EOL . PHP_EOL;
-                        foreach ($carts as $cart) {
-                            $resStr .= $cart->product_name . ', ';
-                            $resStr .= OrderEnum::getShowName('PRICE') . ': ' . $cart->price . ', ';
-                            $resStr .= OrderEnum::getShowName('QTY') . ': ' . $cart->qty . PHP_EOL;
-                        }
-                        $resStr .= PHP_EOL . OrderEnum::getShowName('TOTAL_PRICE') . ': $' . $totalPrice;
-                    }
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder($resStr))
+                        ->add(new TextMessageBuilder($this->showCurrentCartByLineUserId($userId)))
                         ->add($this->getQuickReply());
                 } elseif ($action == CartEnum::getActionName('CHECKOUT')) {
+                    $carts = $this->getCartByLineUserId($userId);
+                    $resStr = CartEnum::getShowName('EMPTY_CART');
+                    $testBankNum = '007';
+                    $testAccount = '001234567899999';
+
+                    if (count($carts) > 0) {
+                        $resStr = $this->showCurrentCartByLineUserId($userId);
+                        $totalPrice = $carts->sum->price;
+
+                        if ($this->clearCartByLineUserId($userId)) {
+                            $resStr .= OrderEnum::getShowName('MONEY_TRANSFER') . PHP_EOL;
+                            $resStr .= PHP_EOL . OrderEnum::getShowName('TRANSFER_BANK_NUM') . ': ' . $testBankNum . PHP_EOL;
+                            $resStr .= OrderEnum::getShowName('TRANSFER_ACCOUNT') . ': ' . $testAccount . PHP_EOL;
+                            $resStr .= OrderEnum::getShowName('TRANSFER_AMOUNT') . ': $ ' . $totalPrice . PHP_EOL;
+                            $resStr .= PHP_EOL . OrderEnum::getShowName('CHECKOUT_SUCCESS');
+                        } else {
+                            $resStr = OrderEnum::getShowName('CHECKOUT_FAIL');
+                        }
+                    }
+
                     $multiple_message_builder
-                        ->add(new TextMessageBuilder(OrderEnum::getShowName('CHECKOUT_SUCCESS')))
+                        ->add(new TextMessageBuilder($resStr))
                         ->add($this->getQuickReply());
                 } else {
                     $multiple_message_builder->add($this->getQuickReply());
