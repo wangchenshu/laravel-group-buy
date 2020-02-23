@@ -33,6 +33,11 @@ class LineMessageController extends Controller
 {
     protected $bot;
 
+    public function __construct()
+    {
+        $this->bot = resolve('linebot');
+    }
+
     private function getUserDisplayName($userId)
     {
         $res = $this->bot->getProfile($userId);
@@ -151,13 +156,11 @@ class LineMessageController extends Controller
         return $cart;
     }
 
-
     private function getCartByLineUserId($lineUserId)
     {
         $carts = Cart::where('line_user_id', $lineUserId)->get();
         return $carts;
     }
-
 
     private function clearCartByLineUserId($lineUserId)
     {
@@ -183,9 +186,9 @@ class LineMessageController extends Controller
 
         return $resStr;
     }
+
     public function index(Request $request)
     {
-        $this->bot = resolve('linebot');
         $signature = $request->header(HTTPHeader::LINE_SIGNATURE);
         $body = $request->getContent();
         $events = $this->bot->parseEventRequest($body, $signature);
