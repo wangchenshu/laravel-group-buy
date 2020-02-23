@@ -102,7 +102,7 @@ class LineMessageController extends Controller
     {
         $data = [];
         $messageTitle = ProductEnum::getShowName('MENU');
-        $products = Product::all();
+        $products = Product::active()->get();
 
         foreach ($products as $product) {
             $productId = $product->id;

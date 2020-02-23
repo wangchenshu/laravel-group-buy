@@ -15,4 +15,9 @@ class Product extends Model
     protected $hidden = [
         'created_at', 'updated_at'
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', '=', 1);
+    }
 }
