@@ -41,7 +41,7 @@ class LineMessageController extends Controller
     private function getUserDisplayName($userId)
     {
         $res = $this->bot->getProfile($userId);
-        $displayName = "";
+        $displayName = '';
 
         if ($res->isSucceeded()) {
             $profile = $res->getJSONDecodedBody();
@@ -57,24 +57,24 @@ class LineMessageController extends Controller
         $messageTitle = ProductEnum::getShowName('MENU');
         $menus = array(
             array(
+                'name' => OrderEnum::getShowName('GROUP_BUY_PRODUCT'),
+                'postBack' => 'action=' . OrderEnum::getActionName('GROUP_BUY_PRODUCT'),
+                'picUrl' => OrderEnum::IMG_URL_OPTION_GROUP_BUY_PRODUCT
+            ),
+            array(
                 'name' => CartEnum::getShowName('CHECK_CART'),
                 'postBack' => 'action=' . CartEnum::getActionName('CHECK_CART'),
-                'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b"
+                'picUrl' => OrderEnum::IMG_URL_OPTION_CHECK_CART
             ),
             array(
                 'name' => CartEnum::getShowName('CHECKOUT'),
                 'postBack' => 'action=' . CartEnum::getActionName('CHECKOUT'),
-                'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b",
-            ),
-            array(
-                'name' => OrderEnum::getShowName('GROUP_BUY_PRODUCT'),
-                'postBack' => 'action=' . OrderEnum::getActionName('GROUP_BUY_PRODUCT'),
-                'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E6%B5%B7%E8%8B%94%E7%A6%AE%E7%9B%92.jpg?alt=media&token=4e1e859f-fae6-41de-86f4-94a506c3a2a9",
+                'picUrl' => OrderEnum::IMG_URL_OPTION_CHECKOUT
             ),
             array(
                 'name' => CartEnum::getShowName('CLEAR_CART'),
                 'postBack' => 'action=' . CartEnum::getActionName('CLEAR_CART'),
-                'picUrl' => "https://firebasestorage.googleapis.com/v0/b/atomy-bot.appspot.com/o/%E8%89%BE%E5%A4%9A%E7%BE%8E%20%E7%89%A9%E7%90%86%E6%80%A7%E9%98%B2%E6%9B%AC%E8%86%8F.jpg?alt=media&token=e659398b-c5a5-4e0e-ae91-614633d2355b",
+                'picUrl' => OrderEnum::IMG_URL_OPTION_CLEAR_CART
             ),
         );
 
@@ -259,8 +259,8 @@ class LineMessageController extends Controller
                 } elseif ($action == CartEnum::getActionName('CHECKOUT')) {
                     $carts = $this->getCartByLineUserId($userId);
                     $resStr = CartEnum::getShowName('EMPTY_CART');
-                    $testBankNum = '007';
-                    $testAccount = '001234567899999';
+                    $testBankNum = OrderEnum::TEST_BANK_NUM;
+                    $testAccount = OrderEnum::TEST_BANK_ACCOUNT;
 
                     if (count($carts) > 0) {
                         $resStr = $this->showCurrentCartByLineUserId($userId);
@@ -271,7 +271,6 @@ class LineMessageController extends Controller
                             $resStr .= PHP_EOL . OrderEnum::getShowName('TRANSFER_BANK_NUM') . ': ' . $testBankNum . PHP_EOL;
                             $resStr .= OrderEnum::getShowName('TRANSFER_ACCOUNT') . ': ' . $testAccount . PHP_EOL;
                             $resStr .= OrderEnum::getShowName('TRANSFER_AMOUNT') . ': $ ' . $totalPrice . PHP_EOL;
-                            // $resStr .= PHP_EOL . OrderEnum::getShowName('CHECKOUT_SUCCESS');
                         } else {
                             $resStr = OrderEnum::getShowName('CHECKOUT_FAIL');
                         }
