@@ -46,7 +46,9 @@ class ChatfuelController extends Controller
     {
         $cart = ChatfuelCart::create($request->all());
         $response = [
-            'messages' => [['text' => $cart->product_name . CartEnum::getShowName('ADD_CART_SUCCESS')]]
+            'messages' => [[
+                'text' => $cart->product_name . CartEnum::getShowName('ADD_CART_SUCCESS')
+            ]]
         ];
 
         return response()->json($response);
@@ -77,8 +79,8 @@ class ChatfuelController extends Controller
         $userId = $request['messenger_user_id'];
         $carts = $this->getCartByMessengerUserId($userId);
         $resStr = CartEnum::getShowName('EMPTY_CART');
-        $testBankNum = '007';
-        $testAccount = '001234567899999';
+        $testBankNum = OrderEnum::TEST_BANK_NUM;
+        $testAccount = OrderEnum::TEST_BANK_ACCOUNT;
 
         if (count($carts) > 0) {
             $resStr = $this->showCurrentCartByMessengerUserId($userId);
@@ -89,7 +91,6 @@ class ChatfuelController extends Controller
                 $resStr .= PHP_EOL . OrderEnum::getShowName('TRANSFER_BANK_NUM') . ': ' . $testBankNum . PHP_EOL;
                 $resStr .= OrderEnum::getShowName('TRANSFER_ACCOUNT') . ': ' . $testAccount . PHP_EOL;
                 $resStr .= OrderEnum::getShowName('TRANSFER_AMOUNT') . ': $ ' . $totalPrice . PHP_EOL;
-                // $resStr .= PHP_EOL . OrderEnum::getShowName('CHECKOUT_SUCCESS');
             } else {
                 $resStr = OrderEnum::getShowName('CHECKOUT_FAIL');
             }
