@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd <YOUR_APP_PATH>/laravel-group-buy
+
+sh startup.sh
+
+exit 0
+
+

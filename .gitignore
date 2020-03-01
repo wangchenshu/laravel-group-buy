@@ -10,3 +10,6 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+
+linux/laravel-group-buy.service
+linux/start-laravel-group-buy-service.sh
